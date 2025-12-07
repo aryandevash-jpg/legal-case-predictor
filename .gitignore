@@ -169,8 +169,8 @@ checkpoint-*/
 *.h5
 *.hdf5
 
-# Data files (uncomment if datasets are large)
-# *.csv
+# Data files (exclude large datasets)
+*.csv
 # *.json
 # *.parquet
 # *.h5

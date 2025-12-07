@@ -1,14 +1,12 @@
 services:
   - type: web
     name: legal-case-predictor-api
-    env: python
+    runtime: python
     buildCommand: pip install -r requirements.txt
     startCommand: uvicorn predicted_output:app --host 0.0.0.0 --port $PORT
     envVars:
       - key: MODEL_DIR
-        value: content/ljp_legalbert_model
-      - key: PYTHON_VERSION
-        value: 3.10.0
+        value: AryanJangde/legal-case-predictor-model
     plan: starter  # Use 'free' for free tier, 'starter' or higher for more resources
     # Note: For large models, you may need 'standard' or 'pro' plan
 
