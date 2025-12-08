@@ -310,12 +310,22 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License.
 
-## 👤 Author
+## 👤 Authors
 
 **Aryan Jangde**
 
 - GitHub: [@aryandevash-jpg](https://github.com/aryandevash-jpg)
 - Model: [AryanJangde/legal-case-predictor-model](https://huggingface.co/AryanJangde/legal-case-predictor-model)
+
+**Mahi**
+
+- GitHub: [@Mahi0606](https://github.com/Mahi0606)
+
+**Prabhat**
+
+- GitHub: [@prabhat1530](https://github.com/prabhat1530)
+
+
 
 ## 🙏 Acknowledgments
 
