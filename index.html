@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Legal Case Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 900px;
+            width: 100%;
+            padding: 40px;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 2.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .options {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .option-group {
+            flex: 1;
+        }
+
+        .option-group label {
+            font-size: 0.9em;
+            margin-bottom: 5px;
+        }
+
+        .option-group input {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .option-group input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .results {
+            display: none;
+            margin-top: 30px;
+            padding: 25px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            border-left: 5px solid #667eea;
+        }
+
+        .results.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-item {
+            margin-bottom: 20px;
+        }
+
+        .result-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .result-value {
+            color: #333;
+            font-size: 1.1em;
+        }
+
+        .verdict {
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .verdict.positive {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+
+        .verdict.negative {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+
+        .probability-bar {
+            width: 100%;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 10px;
+            position: relative;
+        }
+
+        .probability-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .summary {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .error {
+            display: none;
+            padding: 15px;
+            background: #f8d7da;
+            color: #721c24;
+            border-radius: 10px;
+            margin-top: 20px;
+            border-left: 5px solid #dc3545;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .api-status {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .api-status.healthy {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .api-status.unhealthy {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .api-status.checking {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>⚖️ Legal Case Predictor</h1>
+        <p class="subtitle">AI-powered legal case verdict prediction using LegalBERT</p>
+        
+        <div class="api-status checking" id="apiStatus">
+            Checking API connection...
+        </div>
+
+        <div class="input-section">
+            <label for="caseText">Enter Legal Case Text:</label>
+            <textarea 
+                id="caseText" 
+                placeholder="Paste or type the legal case text here. The model will predict the verdict and generate a summary..."
+            ></textarea>
+            
+            <div class="options">
+                <div class="option-group">
+                    <label for="maxLength">Max Summary Length:</label>
+                    <input type="number" id="maxLength" value="200" min="50" max="500">
+                </div>
+                <div class="option-group">
+                    <label for="minLength">Min Summary Length:</label>
+                    <input type="number" id="minLength" value="60" min="20" max="200">
+                </div>
+            </div>
+
+            <button id="predictBtn" onclick="predictCase()">Predict Verdict</button>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Analyzing case and generating prediction...</p>
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <div class="results" id="results">
+            <div class="result-item">
+                <div class="result-label">Predicted Verdict</div>
+                <div class="verdict" id="verdict"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Confidence Score</div>
+                <div class="probability-bar">
+                    <div class="probability-fill" id="probabilityFill"></div>
+                </div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Probability Distribution</div>
+                <div class="result-value" id="probabilities"></div>
+            </div>
+
+            <div class="result-item">
+                <div class="result-label">Case Summary</div>
+                <div class="summary" id="summary"></div>
+            </div>
+
+            <div class="result-item" id="reasoningSection" style="display: none;">
+                <div class="result-label">Verdict Reasoning</div>
+                <div class="summary">
+                    <div style="margin-bottom: 15px;">
+                        <strong>Confidence Level:</strong> <span id="confidenceLevel"></span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Explanation:</strong>
+                        <p id="explanation" style="margin-top: 5px;"></p>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                        <strong>Key Factors:</strong>
+                        <ul id="keyFactors" style="margin-top: 5px; padding-left: 20px;"></ul>
+                    </div>
+                    <div>
+                        <strong>Supporting Evidence:</strong>
+                        <ul id="supportingEvidence" style="margin-top: 5px; padding-left: 20px;"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:8000';
+
+        // Check API health on page load
+        async function checkApiHealth() {
+            const statusEl = document.getElementById('apiStatus');
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                const data = await response.json();
+                
+                if (data.status === 'healthy' && data.model_loaded) {
+                    statusEl.textContent = `✓ API Connected | Model Loaded | Device: ${data.device.toUpperCase()}`;
+                    statusEl.className = 'api-status healthy';
+                } else {
+                    statusEl.textContent = '⚠ API Connected but model not loaded';
+                    statusEl.className = 'api-status unhealthy';
+                }
+            } catch (error) {
+                statusEl.textContent = '✗ API Connection Failed - Make sure the server is running';
+                statusEl.className = 'api-status unhealthy';
+            }
+        }
+
+        async function predictCase() {
+            const caseText = document.getElementById('caseText').value.trim();
+            const maxLength = parseInt(document.getElementById('maxLength').value);
+            const minLength = parseInt(document.getElementById('minLength').value);
+
+            // Validation
+            if (!caseText) {
+                showError('Please enter some legal case text.');
+                return;
+            }
+
+            // UI updates
+            document.getElementById('predictBtn').disabled = true;
+            document.getElementById('loading').classList.add('active');
+            document.getElementById('results').classList.remove('active');
+            document.getElementById('error').classList.remove('active');
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/predict`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        text: caseText,
+                        max_summary_length: maxLength,
+                        min_summary_length: minLength
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || 'Prediction failed');
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                showError(`Error: ${error.message}`);
+            } finally {
+                document.getElementById('predictBtn').disabled = false;
+                document.getElementById('loading').classList.remove('active');
+            }
+        }
+
+        function displayResults(data) {
+            // Display verdict
+            const verdictEl = document.getElementById('verdict');
+            verdictEl.textContent = data.pred_verdict;
+            verdictEl.className = `verdict ${data.pred_label === 1 ? 'positive' : 'negative'}`;
+
+            // Display probability
+            const probabilityPercent = (data.probability * 100).toFixed(1);
+            const probabilityFillEl = document.getElementById('probabilityFill');
+            probabilityFillEl.style.width = `${data.probability * 100}%`;
+            probabilityFillEl.textContent = `${probabilityPercent}%`;
+
+            // Display probability distribution
+            const probEl = document.getElementById('probabilities');
+            const negProb = (data.all_probabilities[0] * 100).toFixed(1);
+            const posProb = (data.all_probabilities[1] * 100).toFixed(1);
+            probEl.textContent = `Negative: ${negProb}% | Positive: ${posProb}%`;
+
+            // Display summary
+            document.getElementById('summary').textContent = data.summary;
+
+            // Display reasoning if available
+            if (data.reasoning) {
+                document.getElementById('reasoningSection').style.display = 'block';
+                document.getElementById('confidenceLevel').textContent = data.reasoning.confidence_level.toUpperCase();
+                document.getElementById('explanation').textContent = data.reasoning.explanation || 'No explanation available.';
+                
+                // Display key factors
+                const keyFactorsEl = document.getElementById('keyFactors');
+                keyFactorsEl.innerHTML = '';
+                if (data.reasoning.key_factors && data.reasoning.key_factors.length > 0) {
+                    data.reasoning.key_factors.forEach(factor => {
+                        const li = document.createElement('li');
+                        li.textContent = factor;
+                        keyFactorsEl.appendChild(li);
+                    });
+                } else {
+                    keyFactorsEl.innerHTML = '<li>No specific factors identified</li>';
+                }
+                
+                // Display supporting evidence
+                const evidenceEl = document.getElementById('supportingEvidence');
+                evidenceEl.innerHTML = '';
+                if (data.reasoning.supporting_evidence && data.reasoning.supporting_evidence.length > 0) {
+                    data.reasoning.supporting_evidence.forEach(evidence => {
+                        const li = document.createElement('li');
+                        li.textContent = evidence;
+                        li.style.marginBottom = '8px';
+                        li.style.fontStyle = 'italic';
+                        evidenceEl.appendChild(li);
+                    });
+                } else {
+                    evidenceEl.innerHTML = '<li>No specific evidence extracted</li>';
+                }
+            } else {
+                document.getElementById('reasoningSection').style.display = 'none';
+            }
+
+            // Show results
+            document.getElementById('results').classList.add('active');
+        }
+
+        function showError(message) {
+            const errorEl = document.getElementById('error');
+            errorEl.textContent = message;
+            errorEl.classList.add('active');
+        }
+
+        // Check API health on load
+        checkApiHealth();
+
+        // Allow Enter key to submit (Ctrl+Enter or Cmd+Enter)
+        document.getElementById('caseText').addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                predictCase();
+            }
+        });
+    </script>
+</body>
+</html>

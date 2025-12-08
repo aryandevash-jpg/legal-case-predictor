@@ -159,7 +159,7 @@ output_dir = "/content/ljp_legalbert_model"
 
 training_args = TrainingArguments(
     output_dir=output_dir,
-    eval_strategy="epoch",        # <-- correct name (not eval_strategy)
+    eval_strategy="epoch",      
     save_strategy="epoch",
     logging_strategy="steps",
     logging_steps=100,
@@ -173,7 +173,6 @@ training_args = TrainingArguments(
     metric_for_best_model="f1",
     greater_is_better=True,
     save_total_limit=2,
-    fp16=torch.cuda.is_available(),
     report_to="none",
 )
 
@@ -238,9 +237,6 @@ print("Test metrics:", test_metrics)
 trainer.save_model(output_dir)
 tokenizer.save_pretrained(output_dir)
 
-print("Training complete ✅ Model saved to:", output_dir)
-
-!zip -r ljp_legalbert_model.zip /content/ljp_legalbert_model
 
 from transformers import pipeline
 
